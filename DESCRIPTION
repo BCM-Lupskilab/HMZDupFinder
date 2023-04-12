@@ -15,9 +15,12 @@ Imports:
     Biostrings,
     data.table,
     dplyr,
+    GenomicRanges,
     Matrix,
     matrixStats,
     pbmcapply,
     Rsamtools,
     Rsubread,
     utils
+Remotes:
+    local::/HMZDupFinder/SLMSeg_1.0

@@ -10,6 +10,7 @@
 #' @importFrom data.table setDT
 #' @importFrom data.table setnames
 #' @importFrom dplyr bind_cols
+#' @importFrom GenomicRanges findOverlaps
 #' @importFrom Matrix rowMeans
 #' @importFrom matrixStats rowSds
 #' @importFrom pbmcapply pbmclapply
