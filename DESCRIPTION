@@ -4,7 +4,7 @@ Title: Detect intragenic homozygous duplication from large exome
 Version: 0.0.0.9000
 Authors@R: 
     person("Haowei", "Du", , "haoweid@bcm.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0001-9052-1587"))
 Description: What the package does (one paragraph).
 License: GNU General Public License v2.0
 Encoding: UTF-8
@@ -21,6 +21,5 @@ Imports:
     pbmcapply,
     Rsamtools,
     Rsubread,
+    S4Vectors,
     utils
-Remotes:
-    local::HMZDupFinder/SLMSeg_1.0
