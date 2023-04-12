@@ -19,6 +19,7 @@
 #' @importFrom Biostrings getSeq
 #' @importFrom Biostrings letterFrequency
 #' @importFrom Rsamtools scanFa
+#' @importFrom IRanges IRanges
 #'
 #' @return The function returns the GRanges object with the metadata column
 #' gcbias', excluding any intervals where the GC bias is not available.
