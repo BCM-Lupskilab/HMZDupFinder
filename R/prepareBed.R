@@ -50,7 +50,7 @@ prepareBed <- function(bedFile,ref.genome){
         return(interval.gr[which(!is.na(interval.gr$gc_bias))])
     } else if (file.exists(ref.genome)){
         print("Calculating GC-content...")
-        x <- scanFa(reference.file, interval.gr)
+        x <- scanFa(ref.genome, interval.gr)
         GC.count <- letterFrequency(x,"GC")
         all.count <- letterFrequency(x,"ATGC")
         interval.gr$gc_bias <- as.vector(ifelse(all.count==0,NA,GC.count/all.count))
