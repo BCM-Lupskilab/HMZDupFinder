@@ -16,6 +16,7 @@
 #' @importFrom pbmcapply pbmclapply
 #' @importFrom Rsamtools scanFa
 #' @importFrom Rsubread featureCounts
+#' @importFrom S4Vectors IRanges
 #' @importFrom S4Vectors queryHits
 #' @importFrom S4Vectors subjectHits
 #' @importFrom utils read.csv
