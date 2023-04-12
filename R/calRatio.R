@@ -1,9 +1,10 @@
 
 #' Z-TPM internal function
-#' 
+#'
 #' @keywords internal
 #' @param group a vector of numeric cor value
 #' @param tpmDtOrdered an output from reordertpmDt (tpmDtOrdered)
+#' @import data.table
 #'
 #' @return ratio
 #' @noRd

@@ -10,6 +10,8 @@ CalcuZtpm(perMat, tpmDtOrdered, mc.cores = 4)
 \item{perMat}{cor matrix of samples}
 
 \item{tpmDtOrdered}{object returned by reorderBedAndRpkmDt}
+
+\item{mc.cores}{number of core used for parallel running}
 }
 \description{
 Calculate Z-TPM with nearest references and write bed file for visualizetion

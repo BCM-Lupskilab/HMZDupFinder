@@ -13,7 +13,7 @@
 #' set of probes.
 #' @param refGene.gr a GRanges object that represents the genomic coordinates
 #' of a set of reference transcripts, metatable includes a transcript_id column
-#' @importFrom GenomicRanges findOverlaps
+#' @importFrom GenomicRanges findOverlaps,subjectHits,queryHits
 #' @return a list where each element corresponds to a transcript, and contains a
 #'  vector of line numbers in the probe file that correspond to that transcript.
 #' @export

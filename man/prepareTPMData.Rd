@@ -10,9 +10,9 @@ prepareTPMData(tpmFile, chrom = NULL, mc.cores = 2)
 \arguments{
 \item{tpmFile}{a vector of paths of tpm.bed file}
 
-\item{mc.cores}{number of core for parallel running}
+\item{chrom}{a vector of chromosome to read}
 
-\item{chr}{a vector of chromosome to read}
+\item{mc.cores}{number of core for parallel running}
 }
 \value{
 a data.table object with sample id named columns; each column stores

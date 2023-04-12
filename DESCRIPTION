@@ -23,4 +23,4 @@ Imports:
     Rsubread,
     utils
 Remotes:
-    local::/HMZDupFinder/SLMSeg_1.0
+    local::HMZDupFinder/SLMSeg_1.0

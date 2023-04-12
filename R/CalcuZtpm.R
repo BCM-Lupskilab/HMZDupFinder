@@ -4,6 +4,7 @@
 ##'
 ##' @param perMat cor matrix of samples
 ##' @param tpmDtOrdered	 object returned by reorderBedAndRpkmDt
+##' @param mc.cores number of core used for parallel running
 ##' @export
 ##------------------------------------------------------------------------------
 

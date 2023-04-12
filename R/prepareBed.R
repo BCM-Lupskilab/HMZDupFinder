@@ -15,6 +15,10 @@
 #'  the GC bias.
 #' @param bedFile a path to capture design or exon file
 #' @param ref.genome a path to indexed fa file or a BSgenome object
+#' @importFrom GenomicRanges GRanges
+#' @importFrom Biostrings getSeq
+#' @importFrom Biostrings letterFrequency
+#' @importFrom Rsamtools scanFa
 #'
 #' @return The function returns the GRanges object with the metadata column
 #' gcbias', excluding any intervals where the GC bias is not available.
@@ -24,10 +28,10 @@ prepareBed <- function(bedFile,ref.genome){
     if(class(ref.genome)!="BSgenome"&!is.character(ref.genome)){
         stop("Please provide a valid path to reference.fa or BSgenome object")}
     print("***Reading bed file***")
-    bed <- fread(bedFile)
+    bed <- fread(bedFile,header = F,stringsAsFactors = F)
     ord <- order(bed$V1, bed$V2)
     bedOrdered <- bed[ord,]
-    
+
     toRemIdx <- which(duplicated(paste(bedOrdered$V1,"_", bedOrdered$V2, "_",bedOrdered$V3)))
     if(length(toRemIdx)!=0){
         print("***Removing duplicated capture design***")
