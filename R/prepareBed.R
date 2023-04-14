@@ -47,7 +47,7 @@ prepareBed <- function(bedFile,ref.genome){
         all.count <- letterFrequency(x,"ATGC")
         interval.gr$gc_bias <- as.vector(ifelse(all.count==0,NA,GC.count/all.count))
         # exclude unavailable regions
-        return(interval.gr[which(!is.na(interval.gr$gc_bias))])
+
     } else if (file.exists(ref.genome)){
         print("Calculating GC-content...")
         x <- scanFa(ref.genome, interval.gr)
@@ -55,7 +55,9 @@ prepareBed <- function(bedFile,ref.genome){
         all.count <- letterFrequency(x,"ATGC")
         interval.gr$gc_bias <- as.vector(ifelse(all.count==0,NA,GC.count/all.count))
         # exclude unavailable regions
-        return(interval.gr[which(!is.na(interval.gr$gc_bias))])
+
     }
+    interval.gr$mid <- (start(bedOrdered)+end(bedOrdered))/2
+    return(interval.gr[which(!is.na(interval.gr$gc_bias))])
 
 }
