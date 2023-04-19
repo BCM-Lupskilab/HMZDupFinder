@@ -4,12 +4,16 @@
 \alias{CalcuZtpm}
 \title{Calculate Z-TPM with nearest references and write bed file for visualizetion}
 \usage{
-CalcuZtpm(perMat, tpmDtOrdered, mc.cores = 4)
+CalcuZtpm(perMat, tpmDtOrdered, bedOrdered, outputDir, mc.cores = 4)
 }
 \arguments{
 \item{perMat}{cor matrix of samples}
 
 \item{tpmDtOrdered}{object returned by reorderBedAndRpkmDt}
+
+\item{bedOrdered}{an object from prepareBed function}
+
+\item{outputDir}{a character value of output directory}
 
 \item{mc.cores}{number of core used for parallel running}
 }

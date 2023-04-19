@@ -15,12 +15,12 @@
     group<-as.numeric(unlist(group))
     gsize <- length(which(group>min.cor))
     Idx <- sort(group, decreasing = TRUE, index.return = TRUE)$ix[1:min(gsize, min.nref)]
-    ll<-tpmDtOrdered[,..Idx]
+    ll <- tpmDtOrdered[,..Idx]
     l <- as.numeric(unlist(ll[,1]))
     Vmean <- rowMeans(as.matrix(ll),na.rm = T)
     Vsd <- rowSds(as.matrix(ll),na.rm = T)
     Zscore <- as.numeric((l-Vmean)/Vsd)
-    names(Zscore)<-colnames(tpmDtOrdered)[Idx[1]]
+    names(Zscore) <- colnames(tpmDtOrdered)[Idx[1]]
     return(Zscore)
 }
 
