@@ -26,7 +26,7 @@ CalcuZtpm <- function(perMat,tpmDtOrdered,bedOrdered,outputDir,mc.cores = 4){
         print(paste0("Writring ", outputFile ))
         out <- data.table(bedOrdered[,c(1:3)],
                           ztpm=as.numeric(unlist(candidateExon[x])),
-                          ratio=as.numeric(unlist(candidateExon2[samplename])))
+                          ratio=as.numeric(unlist(candidateExon2[x])))
         write.table(out,file=outputFile, sep="\t", col.names=T, row.names=F, quote=F)
     })
 }
