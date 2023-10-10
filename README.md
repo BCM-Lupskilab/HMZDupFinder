@@ -15,6 +15,11 @@ library(HMZDupFinder)
 library(IRanges)
 ```
 
+## Or use Docker:
+``` bash
+docker run -it --rm tgambin/hmzdupfinder-image:v1 /bin/bash
+```
+
 ## run on public availiable samples
 ``` r
 library(WES.1KG.WUGSC)
