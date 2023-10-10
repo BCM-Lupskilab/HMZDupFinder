@@ -57,7 +57,7 @@ prepareBed <- function(bedFile,ref.genome){
         # exclude unavailable regions
 
     }
-    interval.gr$mid <- (start(bedOrdered)+end(bedOrdered))/2
+    interval.gr$mid <- (start(interval.gr)+end(interval.gr))/2
     return(interval.gr[which(!is.na(interval.gr$gc_bias))])
 
 }
