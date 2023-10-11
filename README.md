@@ -20,7 +20,6 @@ viewport: width=device-width, initial-scale=1
 
 ``` {.r}
 # require devtools
-
 install.packages("devtools")
 devtools::install_github("cluhaowie/HMZDupFinder")
 devtools::install_github("cluhaowie/VizCNV/SLMSeg")
@@ -29,6 +28,2475 @@ devtools::install_github("cluhaowie/VizCNV/SLMSeg")
 
 ::: {#prepare-the-normalized-read-depth .section .level1}
 # Prepare the normalized read depth
+
+``` {.r}
+library(HMZDupFinder)
+library(IRanges)
+```
+
+    ## Loading required package: BiocGenerics
+
+    ## 
+    ## Attaching package: 'BiocGenerics'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     IQR, mad, sd, var, xtabs
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    ##     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    ##     get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+    ##     match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+    ##     Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+    ##     table, tapply, union, unique, unsplit, which.max, which.min
+
+    ## Loading required package: S4Vectors
+
+    ## Loading required package: stats4
+
+    ## 
+    ## Attaching package: 'S4Vectors'
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     expand.grid, I, unname
+
+``` {.r}
+library(WES.1KG.WUGSC)
+library(BSgenome.Hsapiens.UCSC.hg19)
+```
+
+    ## Loading required package: BSgenome
+
+    ## Loading required package: GenomeInfoDb
+
+    ## Loading required package: GenomicRanges
+
+    ## Loading required package: Biostrings
+
+    ## Loading required package: XVector
+
+    ## 
+    ## Attaching package: 'Biostrings'
+
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     strsplit
+
+    ## Loading required package: rtracklayer
+
+``` {.r}
+library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:Biostrings':
+    ## 
+    ##     collapse, intersect, setdiff, setequal, union
+
+    ## The following object is masked from 'package:XVector':
+    ## 
+    ##     slice
+
+    ## The following objects are masked from 'package:GenomicRanges':
+    ## 
+    ##     intersect, setdiff, union
+
+    ## The following object is masked from 'package:GenomeInfoDb':
+    ## 
+    ##     intersect
+
+    ## The following objects are masked from 'package:IRanges':
+    ## 
+    ##     collapse, desc, intersect, setdiff, slice, union
+
+    ## The following objects are masked from 'package:S4Vectors':
+    ## 
+    ##     first, intersect, rename, setdiff, setequal, union
+
+    ## The following objects are masked from 'package:BiocGenerics':
+    ## 
+    ##     combine, intersect, setdiff, union
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` {.r}
+library(data.table)
+```
+
+    ## 
+    ## Attaching package: 'data.table'
+
+    ## The following objects are masked from 'package:dplyr':
+    ## 
+    ##     between, first, last
+
+    ## The following object is masked from 'package:GenomicRanges':
+    ## 
+    ##     shift
+
+    ## The following object is masked from 'package:IRanges':
+    ## 
+    ##     shift
+
+    ## The following objects are masked from 'package:S4Vectors':
+    ## 
+    ##     first, second
+
+``` {.r}
+ref.genome <- BSgenome.Hsapiens.UCSC.hg19
+dirPath1 <- system.file("extdata", package = "HMZDupFinder")
+dirPath2 <- system.file("extdata", package = "WES.1KG.WUGSC")
+outputDir <- "./output/"
+bamFiles <- list.files(dirPath2, pattern = '*.bam$',full.names = T)
+sampname <- as.character(unlist(read.table(file.path(dirPath2, "sampname"))))
+bedFile <- file.path(dirPath1, "chr22_400_to_500.bed")
+# prepare bed file
+bedOrdered <- prepareBed(bedFile,ref.genome = ref.genome)
+```
+
+    ## [1] "***Reading bed file***"
+    ## [1] "***Annotating GC ratio***"
+    ## [1] "Calculating GC-content..."
+
+``` {.r}
+## calculate TPM
+calcTPMsFromBAMs(bedOrdered,bamFiles,sampname,outputDir,mc.cores = 1)
+```
+
+    ## [1] "NA06994"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA06994.mapped.ILLUMINA.bwa.CEU.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA06994.mapped.ILLUMINA.bwa.CEU.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 29877                                                ||
+    ## ||    Successfully assigned alignments : 10881 (36.4%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA10847"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA10847.mapped.ILLUMINA.bwa.CEU.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA10847.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 38109                                                ||
+    ## ||    Successfully assigned alignments : 12663 (33.2%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA11840"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA11840.mapped.ILLUMINA.bwa.CEU.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA11840.mapped.ILLUMINA.bwa.CEU.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 40677                                                ||
+    ## ||    Successfully assigned alignments : 12854 (31.6%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12249"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12249.mapped.ILLUMINA.bwa.CEU.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12249.mapped.ILLUMINA.bwa.CEU.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 34559                                                ||
+    ## ||    Successfully assigned alignments : 11677 (33.8%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12716"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12716.mapped.ILLUMINA.bwa.CEU.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12716.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 40153                                                ||
+    ## ||    Successfully assigned alignments : 13585 (33.8%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12750"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12750.mapped.ILLUMINA.bwa.CEU.exome.201304 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12750.mapped.ILLUMINA.bwa.CEU.exome.20130415.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 140758                                               ||
+    ## ||    Successfully assigned alignments : 27965 (19.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12751"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12751.mapped.ILLUMINA.bwa.CEU.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12751.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 39854                                                ||
+    ## ||    Successfully assigned alignments : 12370 (31.0%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12760"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12760.mapped.ILLUMINA.bwa.CEU.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12760.mapped.ILLUMINA.bwa.CEU.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 41954                                                ||
+    ## ||    Successfully assigned alignments : 13841 (33.0%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12761"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12761.mapped.ILLUMINA.bwa.CEU.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12761.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 35030                                                ||
+    ## ||    Successfully assigned alignments : 10877 (31.1%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA12763"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA12763.mapped.ILLUMINA.bwa.CEU.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA12763.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 35536                                                ||
+    ## ||    Successfully assigned alignments : 11423 (32.1%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18966"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18966.mapped.ILLUMINA.bwa.JPT.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18966.mapped.ILLUMINA.bwa.JPT.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36024                                                ||
+    ## ||    Successfully assigned alignments : 11903 (33.0%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18967"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18967.mapped.ILLUMINA.bwa.JPT.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18967.mapped.ILLUMINA.bwa.JPT.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 42050                                                ||
+    ## ||    Successfully assigned alignments : 12559 (29.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18968"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18968.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18968.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36688                                                ||
+    ## ||    Successfully assigned alignments : 12649 (34.5%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18969"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18969.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18969.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36995                                                ||
+    ## ||    Successfully assigned alignments : 11725 (31.7%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18970"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18970.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18970.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 39733                                                ||
+    ## ||    Successfully assigned alignments : 13045 (32.8%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18971"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18971.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18971.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 38453                                                ||
+    ## ||    Successfully assigned alignments : 12492 (32.5%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18972"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18972.mapped.ILLUMINA.bwa.JPT.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18972.mapped.ILLUMINA.bwa.JPT.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 26012                                                ||
+    ## ||    Successfully assigned alignments : 10115 (38.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18973"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18973.mapped.ILLUMINA.bwa.JPT.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18973.mapped.ILLUMINA.bwa.JPT.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 35690                                                ||
+    ## ||    Successfully assigned alignments : 11757 (32.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18974"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18974.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18974.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36298                                                ||
+    ## ||    Successfully assigned alignments : 11824 (32.6%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18975"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18975.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18975.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 37632                                                ||
+    ## ||    Successfully assigned alignments : 11870 (31.5%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18976"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18976.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18976.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36486                                                ||
+    ## ||    Successfully assigned alignments : 11832 (32.4%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18981"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18981.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18981.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 33428                                                ||
+    ## ||    Successfully assigned alignments : 11218 (33.6%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18987"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18987.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18987.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36112                                                ||
+    ## ||    Successfully assigned alignments : 11691 (32.4%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18990"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18990.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18990.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 38362                                                ||
+    ## ||    Successfully assigned alignments : 12362 (32.2%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA18991"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA18991.mapped.ILLUMINA.bwa.JPT.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA18991.mapped.ILLUMINA.bwa.JPT.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 31927                                                ||
+    ## ||    Successfully assigned alignments : 11084 (34.7%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19098"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19098.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19098.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 40178                                                ||
+    ## ||    Successfully assigned alignments : 12481 (31.1%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19119"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19119.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19119.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 39801                                                ||
+    ## ||    Successfully assigned alignments : 13462 (33.8%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19131"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19131.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19131.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 42989                                                ||
+    ## ||    Successfully assigned alignments : 13127 (30.5%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19137"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19137.mapped.ILLUMINA.bwa.YRI.exome.201304 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19137.mapped.ILLUMINA.bwa.YRI.exome.20130415.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 173640                                               ||
+    ## ||    Successfully assigned alignments : 34871 (20.1%)                        ||
+    ## ||    Running time : 0.01 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19138"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19138.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19138.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 39870                                                ||
+    ## ||    Successfully assigned alignments : 12906 (32.4%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19141"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19141.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19141.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 36872                                                ||
+    ## ||    Successfully assigned alignments : 12175 (33.0%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19143"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19143.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19143.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 38251                                                ||
+    ## ||    Successfully assigned alignments : 12752 (33.3%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19144"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19144.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19144.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 42838                                                ||
+    ## ||    Successfully assigned alignments : 14056 (32.8%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19152"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19152.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19152.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 39319                                                ||
+    ## ||    Successfully assigned alignments : 13722 (34.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19153"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19153.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19153.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 43819                                                ||
+    ## ||    Successfully assigned alignments : 13374 (30.5%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19159"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19159.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19159.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 39538                                                ||
+    ## ||    Successfully assigned alignments : 12605 (31.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19160"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19160.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19160.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 38858                                                ||
+    ## ||    Successfully assigned alignments : 13302 (34.2%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19171"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19171.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19171.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 48717                                                ||
+    ## ||    Successfully assigned alignments : 15420 (31.7%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19200"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19200.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19200.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 42168                                                ||
+    ## ||    Successfully assigned alignments : 14302 (33.9%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19201"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19201.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19201.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 44242                                                ||
+    ## ||    Successfully assigned alignments : 14673 (33.2%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19204"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19204.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19204.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 33022                                                ||
+    ## ||    Successfully assigned alignments : 11562 (35.0%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19206"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19206.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19206.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 43325                                                ||
+    ## ||    Successfully assigned alignments : 13962 (32.2%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19207"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19207.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19207.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 40174                                                ||
+    ## ||    Successfully assigned alignments : 13357 (33.2%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19209"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19209.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19209.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 49423                                                ||
+    ## ||    Successfully assigned alignments : 15362 (31.1%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19210"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19210.mapped.ILLUMINA.bwa.YRI.exome.201212 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19210.mapped.ILLUMINA.bwa.YRI.exome.20121211.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 35854                                                ||
+    ## ||    Successfully assigned alignments : 13674 (38.1%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## [1] "NA19223"
+    ## 
+    ##         ==========     _____ _    _ ____  _____  ______          _____  
+    ##         =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+    ##           =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+    ##             ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+    ##               ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+    ##         ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+    ##        Rsubread 2.12.3
+    ## 
+    ## //========================== featureCounts setting ===========================\\
+    ## ||                                                                            ||
+    ## ||             Input files : 1 BAM file                                       ||
+    ## ||                                                                            ||
+    ## ||                           NA19223.mapped.ILLUMINA.bwa.YRI.exome.201205 ... ||
+    ## ||                                                                            ||
+    ## ||              Paired-end : yes                                              ||
+    ## ||        Count read pairs : yes                                              ||
+    ## ||              Annotation : R data.frame                                     ||
+    ## ||      Dir for temp files : .                                                ||
+    ## ||                 Threads : 3                                                ||
+    ## ||                   Level : meta-feature level                               ||
+    ## ||      Multimapping reads : counted                                          ||
+    ## || Multi-overlapping reads : counted                                          ||
+    ## ||   Min overlapping bases : 1                                                ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+    ## 
+    ## //================================= Running ==================================\\
+    ## ||                                                                            ||
+    ## || Load annotation file .Rsubread_UserProvidedAnnotation_pid17435 ...         ||
+    ## ||    Features : 100                                                          ||
+    ## ||    Meta-features : 100                                                     ||
+    ## ||    Chromosomes/contigs : 1                                                 ||
+    ## ||                                                                            ||
+    ## || Process BAM file NA19223.mapped.ILLUMINA.bwa.YRI.exome.20120522.bam.ch ... ||
+    ## ||    WARNING: Single-end reads were found.                                   ||
+    ## ||    Total alignments : 40866                                                ||
+    ## ||    Successfully assigned alignments : 13806 (33.8%)                        ||
+    ## ||    Running time : 0.00 minutes                                             ||
+    ## ||                                                                            ||
+    ## || Write the final count table.                                               ||
+    ## || Write the read assignment summary.                                         ||
+    ## ||                                                                            ||
+    ## \\============================================================================//
+
+``` {.r}
+# generate TPM data frame
+tpmFile <- list.files(outputDir,pattern = "*tpm.bed$",full.names = T)
+tpmDtOrdered <- prepareTPMData(tpmFile,mc.cores = 2)
+```
+
+    ## [1] "Reading TPM files ..."
+    ## [1] "Removing empty elements ..."
+    ## [1] "Creating matrix ..."
+    ## [1] "Creating data.table (may take a while)..."
+
+``` {.r}
+## compare the TPM profile to identify reference st
+perMat <- cor(tpmDtOrdered,method = "pearson")
+
+## write out the Z-TPM and log2 ratio
+CalcuZtpm(perMat,tpmDtOrdered,bedOrdered,outputDir,mc.cores = 4)
+```
+
+    ## [1] "[******Calculate Z-TPM**********]"
+    ## [1] "[******Calculate Ratio**********]"
+    ## [1] "[******Binding the values**********]"
+    ## [1] "[******Write z-tpm and ratio to individual file**********]"
+    ## [1] "Writring ./output//NA06994.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA10847.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA11840.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12249.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12716.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12750.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12751.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12760.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12761.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA12763.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18966.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18967.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18968.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18969.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18970.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18971.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18972.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18973.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18974.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18975.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18976.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18981.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18987.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18990.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA18991.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19098.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19119.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19131.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19137.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19138.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19141.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19143.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19144.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19152.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19153.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19159.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19160.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19171.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19200.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19201.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19204.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19206.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19207.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19209.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19210.ztpm.ratio.bed"
+    ## [1] "Writring ./output//NA19223.ztpm.ratio.bed"
+
+    ## [[1]]
+    ## NULL
+    ## 
+    ## [[2]]
+    ## NULL
+    ## 
+    ## [[3]]
+    ## NULL
+    ## 
+    ## [[4]]
+    ## NULL
+    ## 
+    ## [[5]]
+    ## NULL
+    ## 
+    ## [[6]]
+    ## NULL
+    ## 
+    ## [[7]]
+    ## NULL
+    ## 
+    ## [[8]]
+    ## NULL
+    ## 
+    ## [[9]]
+    ## NULL
+    ## 
+    ## [[10]]
+    ## NULL
+    ## 
+    ## [[11]]
+    ## NULL
+    ## 
+    ## [[12]]
+    ## NULL
+    ## 
+    ## [[13]]
+    ## NULL
+    ## 
+    ## [[14]]
+    ## NULL
+    ## 
+    ## [[15]]
+    ## NULL
+    ## 
+    ## [[16]]
+    ## NULL
+    ## 
+    ## [[17]]
+    ## NULL
+    ## 
+    ## [[18]]
+    ## NULL
+    ## 
+    ## [[19]]
+    ## NULL
+    ## 
+    ## [[20]]
+    ## NULL
+    ## 
+    ## [[21]]
+    ## NULL
+    ## 
+    ## [[22]]
+    ## NULL
+    ## 
+    ## [[23]]
+    ## NULL
+    ## 
+    ## [[24]]
+    ## NULL
+    ## 
+    ## [[25]]
+    ## NULL
+    ## 
+    ## [[26]]
+    ## NULL
+    ## 
+    ## [[27]]
+    ## NULL
+    ## 
+    ## [[28]]
+    ## NULL
+    ## 
+    ## [[29]]
+    ## NULL
+    ## 
+    ## [[30]]
+    ## NULL
+    ## 
+    ## [[31]]
+    ## NULL
+    ## 
+    ## [[32]]
+    ## NULL
+    ## 
+    ## [[33]]
+    ## NULL
+    ## 
+    ## [[34]]
+    ## NULL
+    ## 
+    ## [[35]]
+    ## NULL
+    ## 
+    ## [[36]]
+    ## NULL
+    ## 
+    ## [[37]]
+    ## NULL
+    ## 
+    ## [[38]]
+    ## NULL
+    ## 
+    ## [[39]]
+    ## NULL
+    ## 
+    ## [[40]]
+    ## NULL
+    ## 
+    ## [[41]]
+    ## NULL
+    ## 
+    ## [[42]]
+    ## NULL
+    ## 
+    ## [[43]]
+    ## NULL
+    ## 
+    ## [[44]]
+    ## NULL
+    ## 
+    ## [[45]]
+    ## NULL
+    ## 
+    ## [[46]]
+    ## NULL
 :::
 
 ::: {#call-dups-with-custom-defined-parameters .section .level1}
