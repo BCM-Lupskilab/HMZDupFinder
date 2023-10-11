@@ -20,11 +20,21 @@ devtools::install_github("cluhaowie/HMZDupFinder")
 devtools::install_github("cluhaowie/VizCNV/SLMSeg")
 ```
 
+
+## Or use Docker:
+``` bash
+docker run -it --rm tgambin/hmzdupfinder-image:v1 /bin/bash
+```
+
+## run on public availiable samples
+``` r
+
 # Prepare the normalized read depth
 
 ``` {.r}
 library(HMZDupFinder)
 library(IRanges)
+
 library(WES.1KG.WUGSC)
 library(BSgenome.Hsapiens.UCSC.hg19)
 library(dplyr)
