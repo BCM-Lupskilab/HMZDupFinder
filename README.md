@@ -306,4 +306,4 @@ wg_ratio2plot <- function(df,id){
 df <- fread("output/NA10847.ztpm.ratio.bed",stringsAsFactors = F)
 wg_ratio2plot(df,"NA10847")
 ```
-![](NA10847.pdf)
+[](/NA10847.pdf)
