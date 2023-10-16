@@ -23,4 +23,5 @@ Imports:
     Rsamtools,
     Rsubread,
     S4Vectors,
+    SLMSeg,
     utils

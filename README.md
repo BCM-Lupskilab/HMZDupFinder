@@ -70,47 +70,6 @@ CalcuZtpm(perMat,tpmDtOrdered,bedOrdered,outputDir,mc.cores = 4)
 ## call homozygous duplication with fine-tune cut-off
 hmzdup.seg.mean <- c(0.85,1.15)
 ztpm.mean.cutoff <- 1.5 ## with the optimized ztpm cutoff(>4.0), there are no call in the toy data set, here set 1.5 to get the low confidence call
-SegNormRDES <- function(df,id,seg.method="slm"){
-  ##EDIT: include SLM segmentation
-  if (seg.method == "slm") {
-    print("segment with SLM")
-    df.ls <- base::split(df, df$seqnames)
-    res <- lapply(df.ls, function(df) {
-      logratio <- log2(df$ratio + 0.001)
-      logratio[is.na(logratio)] <- 0
-      slm <-
-        SLMSeg::HSLM(
-          logratio,
-          pos_data = (df$start+df$end)/2,
-          omega = 0.7,
-          FW = 0,
-          eta = 1e-5,
-          stepeta=1000
-        )
-      res <- rle(slm[1, ])
-      idx <- sapply(seq_along(res$lengths),function(i){
-        if(i==1){return(1)}
-        start.idx=1+sum(res$lengths[1:(i-1)])
-        return(start.idx)
-      })
-      chr=df$seqnames[idx]
-      start=df$start[idx]
-      end=c(df$start[c(idx[-1],end(df$start)[1])])
-      mean_ztpm <- sapply(seq_along(res$lengths),
-                          function(i){
-                            if(i==1){
-                              return(mean(df$ztpm[1:res$lengths[i]]))
-                            }
-                            z <- df$ztpm[(1+sum(res$lengths[1:(i-1)])):(sum(res$lengths[1:i]))]
-                            return(mean(z))
-                          })
-      res.dt <- data.table(ID=id,chrom=chr,loc.start=start,loc.end=end,
-                           num.mark=res$lengths,seg.mean=res$values,
-                           ztpm.mean=mean_ztpm)
-    })
-    res <- data.table::rbindlist(res)
-  }
-}
 
 ## get all hmz dup call 
 ztpmFile <- list.files(outputDir,pattern = "*ztpm.ratio.bed",full.names = T)
