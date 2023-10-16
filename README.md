@@ -23,7 +23,7 @@ devtools::install_github("cluhaowie/HMZDupFinder")
 
 ## Or use Docker:
 ``` bash
-docker run -it --rm tgambin/hmzdupfinder-image:v1 /bin/bash
+docker run -it --rm -v /local/output/:/output tgambin/hmzdupfinder-image:v1 /bin/bash
 ```
 
 ## run on public availiable samples
@@ -273,6 +273,7 @@ wg_ratio2plot <- function(df,id){
   return(wg)
 }
 df <- fread("output/NA10847.ztpm.ratio.bed",stringsAsFactors = F)
-wg_ratio2plot(df,"NA10847")
+plt <- wg_ratio2plot(df,"NA10847")
+ggsave("./output/NA10847.pdf",plt, width = 6,height = 4)
 ```
 ![](NA10847.png)
