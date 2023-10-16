@@ -17,7 +17,7 @@ title: HMZDupFinder example run
 # require devtools
 install.packages("devtools")
 devtools::install_github("cluhaowie/HMZDupFinder")
-devtools::install_github("cluhaowie/VizCNV/SLMSeg")
+
 ```
 
 
